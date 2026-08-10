@@ -10,7 +10,7 @@ ansi = require("ansi")
 ```
 
 > ### Important!
-> Because every fonctions only returns an **ANSI code**, they **must** be concatenated to a string to be used.
+> Because every fonctions only returns an **ANSI escape code**, they **must** be concatenated to a string to be used.
 >
 > ```lua
 > text = ansi.color("blue").."blue text"..ansi.reset()
@@ -238,6 +238,46 @@ Clear all or part of the current line using `ansi.clear_line(mode)`. The **mode*
 
 ```lua
 ansi.clear_line("after") -- Clears the current line, after the cursor
+```
+
+<br>
+
+## Misc
+*Miscellaneous functions included in ANSI.lua.*
+
+### bell()
+Make an audible noise with `ansi.bell()`.
+
+```lua
+ansi.bell() -- Notification
+```
+
+### format()
+Automatically apply ***in string*** effects using `ansi.format()`. Use **tags** in the format `[function(argument)text]`. May not work with non *text effects* functions.
+
+Rules:
+
+- The function should only be its name without the prefix ***ansi.***
+- If the argument is a string, do not put quoting marks around it.
+
+
+<br>
+
+```lua
+ansi.format("Normal text, [color(blue)blue text].") 
+```
+```lua
+ansi.format("[underline(true)Underlined text], normal text.") 
+```
+```lua
+ansi.format("[blink(1)This text is blinking.]") 
+```
+```lua
+name = "aloctt"
+ansi.format("Hi my [intensity(1)name] is [color(red)"..name.."]!")
+```
+```lua
+ansi.format("Normal [color(blue)blue [italic(true)italic-blue] blue] normal.")
 ```
 
 <br>
