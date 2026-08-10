@@ -255,23 +255,6 @@ end
 
 local parse
 
-local function parse_string(s_t, i, e_q)
-    local res = ""
-    while true do
-        local char = s_t[i]
-        if char == "[" then
-            local v
-            v, i = parse(s_t, i, e_q)
-            res = res..v
-        else
-            res = res..s_t[i]
-        end
-        i = i + 1
-        if i > #s_t then break end
-    end
-    return res, i
-end
-
 local function parse_table(s_t, i)
     local res = {}
     local arg = ""
@@ -386,12 +369,29 @@ local function parse_bracket(s_t, i, e_q)
     return res, i, e_q
 end
 
-parse = function(s_t, i, e_q)
+local function parse_string(s_t, i, e_q)
+    local res = ""
     local char = s_t[i]
     if char == "[" then
-        return parse_bracket(s_t, i, e_q)
+        local v
+        v, i = parse_bracket(s_t, i, e_q)
+        res = res..v
+    else
+        res = res..s_t[i]
     end
-    return parse_string(s_t, i, e_q)
+    i = i + 1
+    return res, i
+end
+
+parse = function(s_t, i, e_q)
+    local res = ""
+    while i <= #s_t do
+        local v
+        v, i = parse_string(s_t, i, e_q)
+        res = res..v
+    end
+    res = res..ansi.reset()
+    return res, i
 end
 
 ---@param s string
@@ -402,7 +402,7 @@ function ansi.format(s)
         s_table[#s_table+1] = char
     end
     local res, i = parse(s_table, 1, effect_queue)
-    return res..ansi.reset()
+    return res
 end
 
 return ansi
