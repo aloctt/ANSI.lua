@@ -9,13 +9,13 @@ To use ANSI.lua, download the file **ansi.lua** and put it into a folder accessi
 ansi = require("ansi")
 ```
 
-### Important!
-Because every fonctions only returns an **ANSI code**, they **must** be concatenated to a string to be used.
-
-```lua
-text = ansi.color("blue").."blue text"..ansi.reset()
-print(text)
-```
+> ### Important!
+> Because every fonctions only returns an **ANSI code**, they **must** be concatenated to a string to be used.
+>
+> ```lua
+> text = ansi.color("blue").."blue text"..ansi.reset()
+> print(text)
+> ```
 
 <br>
 
@@ -25,7 +25,7 @@ _Useful definitions of **arguments** to more easily understand how to use_ **ANS
 
 ### "color_name"
 
-A **string** containing one of these supported color: 
+A **string** containing one of these supported colors: 
 
 - `black`
 - `red`
@@ -46,7 +46,7 @@ A **string** containing one of these supported color:
 
 ### "rgb_data"
 
-A **table** containing three **integers** (0-255) that indicate the value of red, green and blue:
+A **table** containing three **integers** (0-255) indicating the values of red, green and blue:
 
 `{r, g, b}`
 
@@ -237,7 +237,7 @@ Clear all or part of the current line using `ansi.clear_line(mode)`. The **mode*
 - **"all"** clears all the current line
 
 ```lua
-ansi.clear_line("after") -- Clears the current line after the cursor
+ansi.clear_line("after") -- Clears the current line, after the cursor
 ```
 
 <br>
