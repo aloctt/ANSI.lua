@@ -1,4 +1,4 @@
-local ansi = {}
+local ansi = { cursor = {} }
 
 local ESC = "\27"
 
@@ -155,20 +155,16 @@ function ansi.overline(state)
     return CSI..seq.."m"
 end
 
---------------------
--- Cursor control -- (Not implemented in the parser)
---------------------
-
-function ansi.push_cursor()
+function ansi.cursor.push()
     return ESC..7
 end
 
-function ansi.pop_cursor()
+function ansi.cursor.pop()
     return ESC..8
 end
 
 ---@param state boolean?
-function ansi.show_cursor(state)
+function ansi.cursor.show(state)
     local seq = "h"
     if not state then 
         seq = "l"
@@ -178,7 +174,7 @@ end
 
 ---@param dx integer
 ---@param dy integer
-function ansi.move_cursor(dx, dy)
+function ansi.cursor.move(dx, dy)
     local seq = {}
     if dx > 0 then
         table.insert(seq, dx.."A")
@@ -195,7 +191,7 @@ function ansi.move_cursor(dx, dy)
 end
 
 ---@param dy integer
-function ansi.move_cursor_line(dy)
+function ansi.cursor.move_line(dy)
     local seq = ""
     if dy > 0 then
         seq = -dy.."F"
@@ -207,13 +203,13 @@ function ansi.move_cursor_line(dy)
 end
 
 ---@param column integer
-function ansi.set_cursor_column(column)
+function ansi.cursor.set_column(column)
     return CSI..column.."G"
 end
 
 ---@param x integer
 ---@param y integer
-function ansi.set_cursor_position(x, y)
+function ansi.cursor.set_position(x, y)
     return CSI..x..";"..y.."H"
 end
 
@@ -245,7 +241,7 @@ function ansi.clear_line(mode)
     return CSI..seq.."K"
 end
 
-function ansi.report_cursor_position()
+function ansi.cursor.report_position()
     return CSI.."6n"
 end
 
@@ -255,6 +251,17 @@ end
 
 local parse
 
+local function decode_error(type, err, i)
+    local res = ""
+    if type == 1 then
+        res = "Invalid input string: "
+    elseif type == 2 then
+        res = "Invalid function name: "
+    end
+    res = "From function ansi.format: "..res..err..", at position "..i
+    error(res)
+end
+
 local function parse_table(s_t, i)
     local res = {}
     local arg = ""
@@ -262,7 +269,9 @@ local function parse_table(s_t, i)
     while true do
         local char = s_t[i]
         if char == "}" then
-            table.insert(res, arg)
+            if #arg > 0 then
+                table.insert(res, arg)
+            end
             i = i + 1
             break
         elseif char == "," then
@@ -276,12 +285,13 @@ local function parse_table(s_t, i)
     return res, i
 end
 
-local function parse_arguments(s_t, i)
+local function parse_argument(s_t, i)
     local arg
     i = i + 1
     local char = s_t[i]
     if char == "{" then
         arg, i = parse_table(s_t, i)
+        i = i + 1
     else
         arg = ""
         while true do
@@ -301,9 +311,11 @@ local function parse_arguments(s_t, i)
                 arg = arg..char
             end
             i = i + 1
+            if i > #s_t then
+                decode_error(1, "missing ')' to close function", i)
+            end
         end
     end
-    i = i + 1
     return arg, i
 end
 
@@ -312,24 +324,29 @@ local function parse_function(s_t, i, e_q)
     local name = ""
     local arg
     local func
+    i = i + 1
     while true do
         local char = s_t[i]
         if char == "(" then
-            arg, i = parse_arguments(s_t, i)
+            arg, i = parse_argument(s_t, i)
             func = ansi[name]
-            if type(func) ~= "function" then error("Attempt to call an invalid function: '"..name.."'") end
+            if type(func) ~= "function" then decode_error(2, "'"..name.."'", i) end
             res = func(arg)
             break
         else
             name = name..char
         end
         i = i + 1
+        if i > #s_t then
+            decode_error(1, "missing '(' for function '"..name.."'?", i)
+        end
     end
     table.insert(e_q, #e_q+1, {func, arg})
     return res, i, e_q
 end
 
 local function cancel_effect(fn, arg)
+    -- Attempt to cancel previously applied affects
     local res = ""
     if fn == ansi.color then
         res = ansi.foreground_color("white")..(arg[2] and ansi.background_color("black") or "")
@@ -347,51 +364,24 @@ local function cancel_effect(fn, arg)
     return res
 end
 
-local function parse_bracket(s_t, i, e_q)
-    local res = ""
-    i = i + 1
-    res, i, e_q = parse_function(s_t, i, e_q)
-    while true do
-        local char = s_t[i]
-        if char == "]" then
-            res = res..cancel_effect(table.unpack(e_q[#e_q]))
-            table.remove(e_q, #e_q)
-            break
-        elseif char == "[" then
-            local v
-            v, i = parse(s_t, i, e_q)
-            res = res..v
-        else
-            res = res..char
-        end
-        i = i + 1
-    end
-    return res, i, e_q
-end
-
-local function parse_string(s_t, i, e_q)
-    local res = ""
-    local char = s_t[i]
-    if char == "[" then
-        local v
-        v, i = parse_bracket(s_t, i, e_q)
-        res = res..v
-    else
-        res = res..s_t[i]
-    end
-    i = i + 1
-    return res, i
-end
-
 parse = function(s_t, i, e_q)
     local res = ""
     while i <= #s_t do
+        local char = s_t[i]
         local v
-        v, i = parse_string(s_t, i, e_q)
+        if char == "%" and s_t[i+1] == "{" then
+            i = i + 1
+            v, i, e_q = parse_function(s_t, i, e_q)
+        elseif char == "}" and #e_q > 0 then
+            v = cancel_effect(table.unpack(e_q[#e_q]))
+            table.remove(e_q, #e_q)
+        else
+            v = char
+        end
         res = res..v
+        i = i + 1
     end
-    res = res..ansi.reset()
-    return res, i
+    return res
 end
 
 ---@param s string
@@ -401,8 +391,8 @@ function ansi.format(s)
     for char in s:gmatch(utf8.charpattern) do
         s_table[#s_table+1] = char
     end
-    local res, i = parse(s_table, 1, effect_queue)
-    return res
+    local res = parse(s_table, 1, effect_queue)
+    return res..ansi.reset()
 end
 
 return ansi

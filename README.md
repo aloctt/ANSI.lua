@@ -35,14 +35,14 @@ A **string** containing one of these supported colors:
 - `magenta`
 - `cyan`
 - `white`
-- `bright-black`
-- `bright-red`
-- `bright-green`
-- `bright-yellow`
-- `bright-blue`
-- `bright-magenta`
-- `bright-cyan`
-- `bright-white`
+- `bright_black`
+- `bright_red`
+- `bright_green`
+- `bright_yellow`
+- `bright_blue`
+- `bright_magenta`
+- `bright_cyan`
+- `bright_white`
 
 ### "rgb_data"
 
@@ -164,53 +164,53 @@ ansi.reset() -- Resets all text effects to default
 *Cursor control functions modify the position and attributes of the cursor.*
 
 
-### set_cursor_position()
-Set the cursor's position using `ansi.set_cursor_position(x, y)`. The arguments **x** and **y** are both **integers**.
+### cursor.set_position()
+Set the cursor's position using `ansi.cursor.set_position(x, y)`. The arguments **x** and **y** are both **integers**.
 
 ```lua
-ansi.set_cursor_position(100, 14) -- Sets the cursor position to (100, 14)
+ansi.cursor.set_position(100, 14) -- Sets the cursor position to (100, 14)
 ```
 
-### move_cursor()
-Move the cursor using `ansi.move_cursor(dx, dy)`. The arguments **dx** and **dy** are both **integers** and indicate how much should the cursor move on the **x-axis** and **y-axis**.
+### cursor.move()
+Move the cursor using `ansi.cursor.move(dx, dy)`. The arguments **dx** and **dy** are both **integers** and indicate how much should the cursor move on the **x-axis** and **y-axis**.
 
 ```lua
-ansi.move_cursor(10, -8) -- Moves the cursor down 10 and left 8
+ansi.cursor.move(10, -8) -- Moves the cursor down 10 and left 8
 ```
 
-### move_cursor_line()
-Move the cursor to the begining of the *__current line + dy__* line using `ansi.move_cursor_line(dy)`. The argument **y** is an **integer** and represents how many lines should the cursor go down.
+### cursor.move_line()
+Move the cursor to the begining of the *__current line + dy__* line using `ansi.cursor.move_line(dy)`. The argument **y** is an **integer** and represents how many lines should the cursor go down.
 
 ```lua
-ansi.move_cursor_line(1) -- Moves the cursor down one line and sets its x position to one
+ansi.cursor.move_line(1) -- Moves the cursor down one line and sets its x position to one
 ```
 
-### set_cursor_column()
-Set the cursor's column (x position) using `ansi.set_cursor_column(column)`. The argument **column** is an **integer**.
+### cursor.set_column()
+Set the cursor's column (x position) using `ansi.cursor.set_column(column)`. The argument **column** is an **integer**.
 
 ```lua
-ansi.set_cursor_column(4) -- Sets the cursor's column (x position) to 4
+ansi.cursor.set_column(4) -- Sets the cursor's column (x position) to 4
 ```
 
-### show_cursor()
-Control if the cursor should be showed using `ansi.show_cursor(state)`.
+### cursor.show()
+Control if the cursor should be showed using `ansi.cursor.show(state)`.
 
 ```lua
-ansi.show_cursor(false) -- Hides the cursor
+ansi.cursor.show(false) -- Hides the cursor
 ```
 
-### push_cursor()
-Save the cursor position and properties to be restored later using `ansi.push_cursor()`.
+### cursor.push()
+Save the cursor position and properties to be restored later using `ansi.cursor.push()`.
 
 ```lua
-ansi.push_cursor() -- Saves the cursor's position and properties
+ansi.cursor.push() -- Saves the cursor's position and properties
 ```
 
-### pop_cursor()
-Restore the cursor's position and properties to the most recent `ansi.push_cursor()` call using `ansi.pop_cursor()`.
+### cursor.pop()
+Restore the cursor's position and properties to the most recent `ansi.cursor.push()` call using `ansi.cursor.pop()`.
 
 ```lua
-ansi.pop_cursor() -- Restores the cursor's position and properties
+ansi.cursor.pop() -- Restores the cursor's position and properties
 ```
 
 <br>
@@ -254,7 +254,7 @@ ansi.bell() -- Notification
 ```
 
 ### format()
-Automatically apply ***in string*** effects using `ansi.format()`. Use **tags** in the format `[function(argument)text]`. May not work with non *text effects* functions.
+Automatically apply ***in string*** effects using `ansi.format()`. Use **tags** formatted this way: `%{function(argument)text}`. May not work with non *text effects* functions.
 
 Rules:
 
@@ -264,21 +264,21 @@ Rules:
 <br>
 
 ```lua
-ansi.format("Normal text, [color({255, 0, 127})colored text].") 
+ansi.format("Normal text, %{color({255, 0, 127})colored text}.") 
 ```
 ```lua
 color = {100, 80, 160}
-ansi.format("[color({"..table.concat(color, ", ").."})Colored text.]")
+ansi.format("%{color({"..table.concat(color, ", ").."})Colored text.}")
 ```
 ```lua
-ansi.format("[blink(1)This text is blinking.]") 
+ansi.format("%{blink(1)This text is blinking.}") 
 ```
 ```lua
 name = "aloctt"
-ansi.format("Hi my [intensity(1)name] is [color(red)"..name.."]!")
+ansi.format("Hi my %{intensity(1)name} is %{color(red)"..name.."}!")
 ```
 ```lua
-ansi.format("Normal [color(blue)blue [italic(true)italic-blue] blue] normal.")
+ansi.format("Normal %{color(blue)blue %{italic(true)italic-blue} blue} normal.")
 ```
 
 <br>
