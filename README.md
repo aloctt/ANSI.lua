@@ -239,3 +239,7 @@ Clear all or part of the current line using `ansi.clear_line(mode)`. The **mode*
 ```lua
 ansi.clear_line("after") -- Clears the current line after the cursor
 ```
+
+<br>
+
+###### More infos: [ANSI escape code - Wikipedia](https://wikipedia.org/wiki/ANSI_escape_code)
