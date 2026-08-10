@@ -65,7 +65,7 @@ A **boolean** that indicates if the effect should be enabled or disabled.
 *Text effects modify how the text is displayed.*
 
 ### color()
-Set the foreground (text) color and the background color using `ansi.color(fg_color, bg_color)`. The types of the arguments *fg_color* and *bg_color* are both **color**. You can omit either arguments to only change one text property.
+Set the foreground (text) color and the background color using `ansi.color(fg_color, bg_color)`. The types of the arguments **fg_color** and **bg_color** are both **colors**. You can omit either arguments to only change one text property.
 
 ```lua 
 ansi.color("blue", {20, 10, 30}) -- Sets the text color to blue and the background color to rgb(20, 10, 30)
@@ -94,13 +94,6 @@ ansi.background_color("bright-yellow") -- Sets the background color to bright-ye
 ansi.background_color({45, 45, 45}) -- Sets the background color to rgb(45, 45, 45)
 ```
 
-### reset()
-Reset all text effects using `ansi.reset()`.
-
-```lua
-ansi.reset() -- Resets all text effects to default
-```
-
 ### intensity()
 Set the text intensity using `ansi.intensity(intensity)`. The **intensity** can be either **-1** (faint), **0** (normal) or **1** (bold).
 
@@ -122,6 +115,20 @@ Control the underline effect using `ansi.underline(state)`.
 ansi.underline(false) -- Disables the underline effect
 ```
 
+### strike()
+Control the strike effect using `ansi.strike(state)`.
+
+```lua
+ansi.strike(false) -- Disables the strike effect
+```
+
+### overline()
+Control the overline effect using `ansi.overline(state)`.
+
+```lua
+ansi.overline(true) -- Enables the overline effect
+```
+
 ### blink()
 Set the blink speed using `ansi.blink(speed)`. The **speed** can be either **0** (no blinking), **1** (slow) or **2** (fast).
 
@@ -140,28 +147,14 @@ ansi.reverse(true) -- Enables the reverse (invert) effect
 Control the hide effect using `ansi.hide(state)`. This effect makes the text invisible but still interactable.
 
 ```lua
-ansi,hide(true) -- Enables the hide effect
+ansi.hide(true) -- Enables the hide effect
 ```
 
-### strike()
-Control the strike effect using `ansi.strike(state)`.
+### reset()
+Reset all text effects using `ansi.reset()`.
 
 ```lua
-ansi.strike(false) -- Disables the strike effect
-```
-
-### font()
-Set the displayed font using `ansi.font(font_index)`. The font_index goes from **0** (default) to **10**.
-
-```lua
-ansi.font(0) -- Sets the displayed font to default
-```
-
-### overline()
-Control the overline effect using `ansi.overline(state)`.
-
-```lua
-ansi.overline(true) -- Enables the overline effect
+ansi.reset() -- Resets all text effects to default
 ```
 
 <br>
@@ -170,25 +163,12 @@ ansi.overline(true) -- Enables the overline effect
 
 *Cursor control functions modify the position and attributes of the cursor.*
 
-### push_cursor()
-Save the cursor position and properties to be restored later using `ansi.push_cursor()`.
+
+### set_cursor_position()
+Set the cursor's position using `ansi.set_cursor_position(x, y)`. The arguments **x** and **y** are both **integers**.
 
 ```lua
-ansi.push_cursor() -- Saves the cursor's position and properties
-```
-
-### pop_cursor()
-Restore the cursor's position and properties to the most recent `ansi.push_cursor()` call using `ansi.pop_cursor()`.
-
-```lua
-ansi.pop_cursor() -- Restores the cursor's position and properties
-```
-
-### show_cursor()
-Control if the cursor should be showed using `ansi.show_cursor(state)`.
-
-```lua
-ansi.show_cursor(false) -- Hides the cursor
+ansi.set_cursor_position(100, 14) -- Sets the cursor position to (100, 14)
 ```
 
 ### move_cursor()
@@ -212,12 +192,31 @@ Set the cursor's column (x position) using `ansi.set_cursor_column(column)`. The
 ansi.set_cursor_column(4) -- Sets the cursor's column (x position) to 4
 ```
 
-### set_cursor_position()
-Set the cursor's position using `ansi.set_cursor_position(x, y)`. The arguments **x** and **y** are both **integers**.
+### show_cursor()
+Control if the cursor should be showed using `ansi.show_cursor(state)`.
 
 ```lua
-ansi.set_cursor_position(100, 14) -- Sets the cursor position to (100, 14)
+ansi.show_cursor(false) -- Hides the cursor
 ```
+
+### push_cursor()
+Save the cursor position and properties to be restored later using `ansi.push_cursor()`.
+
+```lua
+ansi.push_cursor() -- Saves the cursor's position and properties
+```
+
+### pop_cursor()
+Restore the cursor's position and properties to the most recent `ansi.push_cursor()` call using `ansi.pop_cursor()`.
+
+```lua
+ansi.pop_cursor() -- Restores the cursor's position and properties
+```
+
+<br>
+
+## Misc
+*Miscellaneous functions included in ANSI.lua.*
 
 ### clear_screen()
 Clear all or part of the screen using `ansi.clear_screen(mode)`. The **mode** is a string can either be **"before"**, **"after"**, **"all"** or **"history"**.
@@ -240,10 +239,12 @@ Clear all or part of the current line using `ansi.clear_line(mode)`. The **mode*
 ansi.clear_line("after") -- Clears the current line, after the cursor
 ```
 
-<br>
+### font()
+Set the displayed font using `ansi.font(font_index)`. The font_index goes from **0** (default) to **10**.
 
-## Misc
-*Miscellaneous functions included in ANSI.lua.*
+```lua
+ansi.font(0) -- Sets the displayed font to default
+```
 
 ### bell()
 Make an audible noise with `ansi.bell()`.
@@ -257,17 +258,17 @@ Automatically apply ***in string*** effects using `ansi.format()`. Use **tags** 
 
 Rules:
 
-- The function should only be its name without the prefix ***ansi.***
+- The function should only be its name, without the prefix ***ansi.***
 - If the argument is a string, do not put quoting marks around it.
-
 
 <br>
 
 ```lua
-ansi.format("Normal text, [color(blue)blue text].") 
+ansi.format("Normal text, [color({255, 0, 127})colored text].") 
 ```
 ```lua
-ansi.format("[underline(true)Underlined text], normal text.") 
+color = {100, 80, 160}
+ansi.format("[color({"..table.concat(color, ", ").."})Colored text.]")
 ```
 ```lua
 ansi.format("[blink(1)This text is blinking.]") 
@@ -283,3 +284,7 @@ ansi.format("Normal [color(blue)blue [italic(true)italic-blue] blue] normal.")
 <br>
 
 ###### More infos: [ANSI escape code - Wikipedia](https://wikipedia.org/wiki/ANSI_escape_code)
+
+<br>
+
+###### *© aloctt 2026*
