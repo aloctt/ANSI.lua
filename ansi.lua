@@ -262,61 +262,31 @@ local function decode_error(type, err, i)
     error(res)
 end
 
-local function parse_table(s_t, i)
-    local res = {}
+local function parse_argument(s_t, i)
     local arg = ""
+    local res = {}
     i = i + 1
+    local char = s_t[i]
     while true do
-        local char = s_t[i]
-        if char == "}" then
-            if #arg > 0 then
-                table.insert(res, arg)
+        char = s_t[i]
+        if char == ")" then
+            local code = "return "..arg
+            local sandbox = {}
+            local chunk, err = load(code, "parse_argument", "t", sandbox)
+            if not chunk then
+                error(err)
             end
-            i = i + 1
+            res = {chunk()}
             break
-        elseif char == "," then
-            table.insert(res, arg)
-            arg = ""
-        elseif char ~= " " then
+        else
             arg = arg..char
         end
         i = i + 1
-    end
-    return res, i
-end
-
-local function parse_argument(s_t, i)
-    local arg
-    i = i + 1
-    local char = s_t[i]
-    if char == "{" then
-        arg, i = parse_table(s_t, i)
-        i = i + 1
-    else
-        arg = ""
-        while true do
-            char = s_t[i]
-            if char == ")" then
-                if arg == "false" then
-                    arg = false
-                elseif arg == "true" then
-                    arg = true
-                elseif tonumber(arg) then
-                    arg = tonumber(arg)
-                elseif arg == "" then
-                    arg = nil
-                end
-                break
-            else
-                arg = arg..char
-            end
-            i = i + 1
-            if i > #s_t then
-                decode_error(1, "missing ')' to close function", i)
-            end
+        if i > #s_t then
+            decode_error(1, "missing ')' to close function", i)
         end
     end
-    return arg, i
+    return res, i
 end
 
 local function parse_function(s_t, i, e_q)
@@ -331,7 +301,7 @@ local function parse_function(s_t, i, e_q)
             arg, i = parse_argument(s_t, i)
             func = ansi[name]
             if type(func) ~= "function" then decode_error(2, "'"..name.."'", i) end
-            res = func(arg)
+            res = func(table.unpack(arg))
             break
         else
             name = name..char
@@ -349,16 +319,14 @@ local function cancel_effect(fn, arg)
     -- Attempt to cancel previously applied affects
     local res = ""
     if fn == ansi.color then
-        res = ansi.foreground_color("white")..(arg[2] and ansi.background_color("black") or "")
+        res = CSI.."39m"..(arg[2] and CSI.."49m" or "")
     elseif fn == ansi.foreground_color then
-        res = fn("white")
+        res = CSI.."39m"
     elseif fn == ansi.background_color then
-        res = fn("black")
-    elseif fn == ansi.color then
-        res = fn("white")
-    elseif type(arg) == "boolean" then
-        res = fn(not arg)
-    elseif type(arg) == "number" then
+        res = CSI.."49m"
+    elseif type(arg[1]) == "boolean" then
+        res = fn(not arg[1])
+    elseif type(arg[1]) == "number" then
         res = fn(0)
     end
     return res

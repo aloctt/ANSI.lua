@@ -172,14 +172,14 @@ ansi.cursor.set_position(100, 14) -- Sets the cursor position to (100, 14)
 ```
 
 ### cursor.move()
-Move the cursor using `ansi.cursor.move(dx, dy)`. The arguments **dx** and **dy** are both **integers** and indicate how much should the cursor move on the **x-axis** and **y-axis**.
+Move the cursor using `ansi.cursor.move(dx, dy)`. The arguments **dx** and **dy** are both **integers** and indicate how much should the cursor move on the **x-axis** and the **y-axis**.
 
 ```lua
 ansi.cursor.move(10, -8) -- Moves the cursor down 10 and left 8
 ```
 
 ### cursor.move_line()
-Move the cursor to the begining of the *__current line + dy__* line using `ansi.cursor.move_line(dy)`. The argument **y** is an **integer** and represents how many lines should the cursor go down.
+Move the cursor to the begining of the *__current line + dy__* line using `ansi.cursor.move_line(dy)`. The argument **dy** is an **integer** and represents how many lines should the cursor go down.
 
 ```lua
 ansi.cursor.move_line(1) -- Moves the cursor down one line and sets its x position to one
@@ -219,7 +219,7 @@ ansi.cursor.pop() -- Restores the cursor's position and properties
 *Miscellaneous functions included in ANSI.lua.*
 
 ### clear_screen()
-Clear all or part of the screen using `ansi.clear_screen(mode)`. The **mode** is a string can either be **"before"**, **"after"**, **"all"** or **"history"**.
+Clear all or part of the screen using `ansi.clear_screen(mode)`. The **mode** is a string and can be **"before"**, **"after"**, **"all"** or **"history"**.
 - **"before"** clears the part of the screen before the cursor
 - **"after"** clears the part of the screen after the cursor
 - **"all"** clears all the screen
@@ -230,7 +230,7 @@ ansi.clear_screen("all") -- Clears all the screen
 ```
 
 ### clear_line()
-Clear all or part of the current line using `ansi.clear_line(mode)`. The **mode** is a string can either be **"before"**, **"after"** or **"all"**.
+Clear all or part of the current line using `ansi.clear_line(mode)`. The **mode** is a string and can be **"before"**, **"after"** or **"all"**.
 - **"before"** clears the part of the current line before the cursor
 - **"after"** clears the part of the current line after the cursor
 - **"all"** clears all the current line
@@ -254,14 +254,9 @@ ansi.bell() -- Notification
 ```
 
 ### format()
-Automatically apply ***in string*** effects using `ansi.format()`. Use **tags** formatted this way: `%{function(argument)text}`. May not work with non *text effects* functions.
+Automatically apply ***in string*** effects using `ansi.format()`. Use **tags** formatted this way: `%{function(argument)text}`. The **function** in the tag should not have the prefix ***ansi.-***.
 
-Rules:
-
-- The function should only be its name, without the prefix ***ansi.***
-- If the argument is a string, do not put quoting marks around it.
-
-<br>
+> May not work with non *text effects* functions.
 
 ```lua
 ansi.format("Normal text, %{color({255, 0, 127})colored text}.") 
@@ -275,10 +270,10 @@ ansi.format("%{blink(1)This text is blinking.}")
 ```
 ```lua
 name = "aloctt"
-ansi.format("Hi my %{intensity(1)name} is %{color(red)"..name.."}!")
+ansi.format("Hi my %{intensity(1)name} is %{color('red', 'cyan')"..name.."}!")
 ```
 ```lua
-ansi.format("Normal %{color(blue)blue %{italic(true)italic-blue} blue} normal.")
+ansi.format("Normal %{color('blue')blue %{italic(true)italic-blue} blue} normal.")
 ```
 
 <br>
